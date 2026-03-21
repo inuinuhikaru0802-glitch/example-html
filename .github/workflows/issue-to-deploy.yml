@@ -1,0 +1,28 @@
+name: Issue triggers deploy (edit index.html)
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+
+jobs:
+  update-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Append issue info to index.html
+        run: |
+          echo "" >> index.html
+          echo "<!-- Updated by Issue #${{ github.event.issue.number }}: ${{ github.event.issue.title }} at $(date -u) -->" >> index.html
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "chore: update index.html from issue #${{ github.event.issue.number }}" || exit 0
+          git push
